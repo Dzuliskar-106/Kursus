@@ -1,5 +1,5 @@
 // Ganti URL ini dengan URL Web App Apps Script Anda!
-const API_URL = "https://script.google.com/macros/s/AKfycb.../exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxSPawE-4xkt3zAPriqFEhOPG5Iio3ssoZjNjAAiJY/dev";
 
 let allStudents = [];
 let studentDetails = {};
