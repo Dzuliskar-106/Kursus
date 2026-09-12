@@ -1,95 +1,138 @@
-// Ganti URL ini dengan URL Web App Apps Script Anda!
-const API_URL = "https://script.google.com/macros/s/AKfycbxKQIwHJLeuz2emwJjuBdEu1WhNtNRUwhoibK0Apd2wr1XInrQLOJTGf2vH5RDIZ3U4/exec";
+// ISI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+const API_URL = "https://script.google.com/macros/s/AKfycbx68zKldNkkxe6ZAVTLix5oeJuYM7OtX9JYhvKydQRghxswXQxAjSxek6qC0kF3MII3/exec";
 
-let allStudents = [];
-let studentDetails = {};
+let globalDetails = {};
 
-// 1. Ambil Semua Nama Siswa Saat Pertama Kali Website Dibatasi (Auto Load)
-document.addEventListener("DOMContentLoaded", () => {
-  fetchStudentList();
-});
+// --- FUNGSI HALAMAN ORANG TUA ---
+async function initOrangTua() {
+  showStatus("statusBox", "Memuat daftar siswa...", "#fff3cd", "#856404");
+  const data = await fetchData(`${API_URL}?action=getAllData`);
 
-function fetchStudentList() {
-  const loading = document.getElementById("loading");
-  loading.classList.remove("d-none");
-
-  fetch(`${API_URL}?action=getAllData`)
-    .then(response => response.json())
-    .then(data => {
-      loading.classList.add("d-none");
-      if (data.students) {
-        allStudents = data.students;
-        studentDetails = data.details;
-        populateDatalist(allStudents);
-      }
-    })
-    .catch(error => {
-      loading.classList.add("d-none");
-      console.error("Gagal mengambil daftar siswa:", error);
-      alert("Gagal terhubung ke Google Sheets!");
+  if (data && data.students) {
+    const select = document.getElementById("selectNama");
+    select.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
+    data.students.forEach(nama => {
+      select.innerHTML += `<option value="${nama}">${nama}</option>`;
     });
-}
-
-// 2. Tampilkan Opsi Auto-complete Nama
-function populateDatalist(students) {
-  const datalist = document.getElementById("studentOptions");
-  datalist.innerHTML = "";
-  students.forEach(nama => {
-    const option = document.createElement("option");
-    option.value = nama;
-    datalist.appendChild(option);
-  });
-}
-
-// 3. Tombol Cari Diklik
-document.getElementById("btnCari").addEventListener("click", () => {
-  const namaInput = document.getElementById("searchNama").value.trim();
-  if (!namaInput) {
-    alert("Silakan masukkan atau pilih nama siswa terlebih dahulu.");
-    return;
+    hideStatus("statusBox");
+  } else {
+    showStatus("statusBox", "Gagal memuat data siswa!", "#f8d7da", "#721c24");
   }
-  getRiwayatSiswa(namaInput);
-});
+}
 
-// 4. Ambil Riwayat Pertemuan Siswa
-function getRiwayatSiswa(nama) {
-  const loading = document.getElementById("loading");
-  const resultCard = document.getElementById("resultCard");
-  const tableBody = document.getElementById("tableBody");
-  const namaSiswaTitle = document.getElementById("namaSiswaTitle");
+async function cariRiwayat() {
+  const nama = document.getElementById("selectNama").value;
+  if (!nama) return alert("Pilih nama siswa terlebih dahulu!");
 
-  loading.classList.remove("d-none");
-  resultCard.classList.add("d-none");
+  showStatus("statusBox", "Mengambil riwayat...", "#fff3cd", "#856404");
+  const data = await fetchData(`${API_URL}?nama=${encodeURIComponent(nama)}`);
+  
+  const tbody = document.getElementById("bodyTabel");
+  tbody.innerHTML = "";
 
-  fetch(`${API_URL}?nama=${encodeURIComponent(nama)}`)
-    .then(response => response.json())
-    .then(data => {
-      loading.classList.add("d-none");
-      namaSiswaTitle.innerText = nama;
-      tableBody.innerHTML = "";
-
-      if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Belum ada riwayat pertemuan untuk siswa ini.</td></tr>`;
-      } else {
-        data.forEach(item => {
-          const row = `
-            <tr>
-              <td>Pertemuan ${item.pertemuan}</td>
-              <td>${item.tanggal}</td>
-              <td><span class="badge ${item.statusPembayaran === 'Lunas' ? 'bg-success' : 'bg-warning'}">${item.statusPembayaran}</span></td>
-              <td>Rp ${parseInt(item.nominal || 0).toLocaleString('id-ID')}</td>
-              <td>${item.catatan}</td>
-            </tr>
-          `;
-          tableBody.innerHTML += row;
-        });
-      }
-
-      resultCard.classList.remove("d-none");
-    })
-    .catch(error => {
-      loading.classList.add("d-none");
-      console.error("Gagal mengambil data riwayat:", error);
-      alert("Terjadi kesalahan saat memuat riwayat!");
+  if (data && data.length > 0) {
+    data.forEach(item => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${item.pertemuan}</td>
+          <td>${item.tanggal}</td>
+          <td>${item.statusPembayaran}</td>
+          <td>Rp ${Number(item.nominal).toLocaleString('id-ID')}</td>
+          <td>${item.catatan}</td>
+        </tr>`;
     });
+    document.getElementById("tabelRiwayat").style.display = "table";
+    hideStatus("statusBox");
+  } else {
+    document.getElementById("tabelRiwayat").style.display = "none";
+    showStatus("statusBox", "Belum ada riwayat pertemuan untuk siswa ini.", "#d1ecf1", "#0c5460");
+  }
+}
+
+// --- FUNGSI HALAMAN ADMIN ---
+async function initAdmin() {
+  document.getElementById("tanggal").valueAsDate = new Date();
+  showStatus("statusBoxAdmin", "Memuat daftar siswa...", "#fff3cd", "#856404");
+
+  const data = await fetchData(`${API_URL}?action=getAllData`);
+
+  if (data && data.students) {
+    globalDetails = data.details || {};
+    const select = document.getElementById("selectNamaAdmin");
+    select.innerHTML = '<option value="">-- Pilih Nama Siswa --</option>';
+    data.students.forEach(nama => {
+      select.innerHTML += `<option value="${nama}">${nama}</option>`;
+    });
+    hideStatus("statusBoxAdmin");
+  } else {
+    showStatus("statusBoxAdmin", "Gagal terhubung ke server!", "#f8d7da", "#721c24");
+  }
+}
+
+function autoFillDetail() {
+  const nama = document.getElementById("selectNamaAdmin").value;
+  if (globalDetails[nama]) {
+    const detail = globalDetails[nama];
+    document.getElementById("pertemuan").value = (detail.maxPertemuan || 0) + 1;
+    document.getElementById("nominal").value = detail.lastNominal || "100000";
+    document.getElementById("statusPembayaran").value = detail.lastStatus || "Lunas";
+  }
+}
+
+async function kirimLaporan(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btnSubmit");
+  btn.disabled = true;
+  btn.innerText = "Menyimpan...";
+  showStatus("statusBoxAdmin", "Mengirim data...", "#fff3cd", "#856404");
+
+  const payload = {
+    nama: document.getElementById("selectNamaAdmin").value,
+    pertemuan: document.getElementById("pertemuan").value,
+    tanggal: document.getElementById("tanggal").value,
+    statusPembayaran: document.getElementById("statusPembayaran").value,
+    nominal: document.getElementById("nominal").value,
+    catatan: document.getElementById("catatan").value
+  };
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    showStatus("statusBoxAdmin", "Laporan berhasil disimpan!", "#d4edda", "#155724");
+    document.getElementById("formInput").reset();
+    document.getElementById("tanggal").valueAsDate = new Date();
+  } catch (err) {
+    showStatus("statusBoxAdmin", "Gagal menyimpan data!", "#f8d7da", "#721c24");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Simpan Laporan";
+  }
+}
+
+// --- HELPER FUNCTION ---
+async function fetchData(url) {
+  try {
+    const res = await fetch(url, { method: "GET", redirect: "follow" });
+    return await res.json();
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return null;
+  }
+}
+
+function showStatus(id, msg, bgColor, textColor) {
+  const box = document.getElementById(id);
+  box.style.display = "block";
+  box.style.backgroundColor = bgColor;
+  box.style.color = textColor;
+  box.innerText = msg;
+}
+
+function hideStatus(id) {
+  document.getElementById(id).style.display = "none";
 }
