@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Input Laporan - Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; }
+    label { font-weight: bold; display: block; margin-top: 12px; }
+    select, input, textarea, button { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+    button { background-color: #28a745; color: white; font-weight: bold; cursor: pointer; border: none; margin-top: 20px; }
+    button:hover { background-color: #218838; }
+    .status { font-weight: bold; padding: 10px; margin-top: 15px; border-radius: 5px; display: none; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Form Input Laporan (Admin)</h2>
+  
+  <div id="statusBoxAdmin" class="status"></div>
+
+  <form id="formInput" onsubmit="kirimLaporan(event)">
+    <label for="selectNamaAdmin">Nama Siswa:</label>
+    <select id="selectNamaAdmin" onchange="autoFillDetail()" required>
+      <option value="">-- Memuat Daftar Siswa... --</option>
+    </select>
+
+    <label for="pertemuan">Pertemuan Ke-:</label>
+    <input type="number" id="pertemuan" min="1" max="50" required>
+
+    <label for="tanggal">Tanggal Pertemuan:</label>
+    <input type="date" id="tanggal" required>
+
+    <label for="statusPembayaran">Status Pembayaran:</label>
+    <select id="statusPembayaran">
+      <option value="Lunas">Lunas</option>
+      <option value="Belum Lunas">Belum Lunas</option>
+    </select>
+
+    <label for="nominal">Nominal (Rp):</label>
+    <input type="number" id="nominal" value="100000" required>
+
+    <label for="catatan">Catatan / Merekam Materi:</label>
+    <textarea id="catatan" rows="3" placeholder="Masukkan catatan..."></textarea>
+
+    <button type="submit" id="btnSubmit">Simpan Laporan</button>
+  </form>
+</div>
+
+<script src="script.js"></script>
+<script>
+  // Muat daftar nama saat halaman admin terbuka
+  document.addEventListener("DOMContentLoaded", initAdmin);
+</script>
+</body>
+</html>
