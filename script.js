@@ -1,5 +1,5 @@
 // ISI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-const API_URL = "https://script.google.com/macros/s/AKfycbx68zKldNkkxe6ZAVTLix5oeJuYM7OtX9JYhvKydQRghxswXQxAjSxek6qC0kF3MII3/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby9h1Lm_wIGNqIOe0BrODLdZnhrrzABpgvMvG2I910WH9KIoi3dk_9s-SfA_8Rkwi9u/exec";
 
 let globalDetails = {};
 
